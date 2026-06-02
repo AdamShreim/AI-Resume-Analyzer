@@ -40,7 +40,8 @@ export default function Signup() {
         <p className="mt-6 text-sm text-center">
           already have an account?
           <Link to="/login" className="text-blue-500 hover:underline">
-            {" "}Login
+            {" "}
+            Login
           </Link>
         </p>
       </div>

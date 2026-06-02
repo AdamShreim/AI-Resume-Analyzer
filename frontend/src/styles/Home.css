@@ -1,0 +1,22 @@
+.home-page {
+  min-height: 100vh;
+  background: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-page::before {
+  content: "";
+  position: absolute;
+
+  top: -200px;
+  right: -200px;
+  width: 600px;
+  height: 600px;
+
+  background: #60a5fa;
+  border-radius: 50%;
+  filter: blur(180px);
+  opacity: 0.4;
+  z-index: 0;
+}

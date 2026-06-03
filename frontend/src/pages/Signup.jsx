@@ -33,7 +33,7 @@ export default function Signup() {
             type="submit"
             className="bg-blue-500 rounded-lg w-full p-2 text-white hover:bg-blue-600"
           >
-            Signup
+            Create Account
           </button>
         </form>
 

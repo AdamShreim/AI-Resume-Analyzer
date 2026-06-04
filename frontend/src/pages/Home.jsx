@@ -5,7 +5,7 @@ import "../styles/Home.css";
 function Feature() {
   return (
     <section id="features" className="w-[80%] mx-auto min-h-screen py-20">
-      <div className="z-50 relative">
+      <div className="z-20 relative">
         <div className="mb-16">
           <p className="font-bold text-2xl">Why Choose AI Resume Analyzer?</p>
           <p className="text-lg mt-4 text-gray-700">
@@ -120,10 +120,10 @@ function Hero() {
   );
 }
 
-function Navbar({ showNavbar }) {
+function Navbar({ showNavbar, scrolled }) {
   return (
     <nav
-      className={`top-6 fixed left-1/2 -translate-x-1/2 z-50 flex w-[80%] mx-auto mt-6 px-8 py-4 rounded-2xl justify-between items-center transition-all duration-300 ${showNavbar ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
+      className={`top-6 fixed left-1/2 -translate-x-1/2 z-50 flex w-[80%] mx-auto mt-6 px-8 py-4 rounded-2xl justify-between items-center transition-all duration-300 ${showNavbar ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"} ${scrolled ? "bg-white shadow-lg backdrop-blur-md" : "bg-transparent"}`}
     >
       <Link to="/" className="text-xl font-bold">
         AI Resume Analyzer
@@ -155,11 +155,13 @@ function Navbar({ showNavbar }) {
 
 export default function Home() {
   const [showNavbar, setShowNavbar] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 50);
       if (currentScrollY > 100 && currentScrollY > lastScrollY) {
         setShowNavbar(false);
       } else {
@@ -176,7 +178,7 @@ export default function Home() {
 
   return (
     <div className="home-page relative min-h-screen">
-      <Navbar showNavbar={showNavbar} />
+      <Navbar showNavbar={showNavbar} scrolled={scrolled} />
       <Hero />
       <Feature />
     </div>

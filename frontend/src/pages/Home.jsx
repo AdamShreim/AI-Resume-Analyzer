@@ -2,24 +2,81 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/Home.css";
 
+function Feature() {
+  return (
+    <section id="features" className="w-[80%] mx-auto min-h-screen py-20">
+      <div className="z-50 relative">
+        <div className="mb-16">
+          <p className="font-bold text-2xl">Why Choose AI Resume Analyzer?</p>
+          <p className="text-lg mt-4 text-gray-700">
+            Discover how AI can help you improve your resume and increase your
+            chances of landing interviews.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-8 mx-8">
+          {/* first card*/}
+          <div className="bg-white rounded-xl p-8 shadow-2xl transition duration-300 hover:-translate-y-1 text-left">
+            <p className="font-extrabold text-4xl mb-4 text-blue-400">01</p>
+            <h2 className="text-xl font-bold mb-4">ATS Optimization</h2>
+            <p className="text-gray-600 leading-relaxed mt-4">
+              Analyze your resume against Applicant Tracking Systems (ATS) used
+              by employers. Identify formatting issues, missing keywords, and
+              optimization opportunities to increase your chances of passing
+              automated screenings.
+            </p>
+          </div>
+
+          {/* second card*/}
+          <div className="bg-white rounded-xl p-8 shadow-2xl transition duration-300 hover:-translate-y-1 text-left">
+            <p className="font-extrabold text-4xl mb-4 text-blue-400">02</p>
+            <h2 className="text-xl font-bold mb-4">AI Feedback</h2>
+            <p className="text-gray-600 leading-relaxed mt-4">
+              Receive intelligent feedback on your resume's structure, content,
+              and presentation. Get actionable recommendations that help you
+              create a stronger, more professional application.
+            </p>
+          </div>
+
+          {/* third card*/}
+          <div className="bg-white rounded-xl p-8 shadow-2xl transition duration-300 hover:-translate-y-1 text-left">
+            <p className="font-extrabold text-4xl mb-4 text-blue-400">03</p>
+            <h2 className="text-xl font-bold mb-4">Skill Analysis</h2>
+            <p className="text-gray-600 leading-relaxed mt-4">
+              Detect important skills and competencies found in your resume
+              while identifying gaps that may impact your applications. Receive
+              personalized suggestions to strengthen your profile.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Hero() {
   return (
-    <section className=" w-[80%] mx-auto min-h-screen flex items-center justify-between gap-16">
+    <section
+      id="Hero"
+      className=" w-[80%] mx-auto min-h-screen flex items-center justify-between gap-16"
+    >
       {/* left side */}
       <div className="w-1/2 flex justify-start text-left">
         <div className="max-w-xl">
-          <div className="items-center">
+          {/* <div className="text-left">
             <p className="ml-8 px-4 py-2 mb-6 rounded-full bg-blue-100 text-blue-700 font-medium text-5xl">
               AI Resume Analyzer
             </p>
-          </div>
-          <div className="t">
+          </div> */}
+          <div className="text-left">
             <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6 ml-8">
               Analyze, Improve and Optimize Your Resume with AI
             </h1>
-            <p className="text-gray-600 text-lg mb-8 ml-8">
-              Get instant feedback on your resume, improve ATS compatibility,
-              and identify areas that can strengthen your job applications.
+            <p className="text-gray-600 text-lg mb-8 ml-8 text-left">
+              Receive detailed AI-powered insights on your resume, improve ATS
+              compatibility, identify missing skills and keywords, and discover
+              practical recommendations to strengthen your job applications and
+              increase your chances of securing interviews.
             </p>
           </div>
           <div className="flex gap-6 justify-center ml-8">
@@ -66,7 +123,7 @@ function Hero() {
 function Navbar({ showNavbar }) {
   return (
     <nav
-      className={`top-6 fixed left-1/2 -translate-x-1/2 z-50 flex w-[80%] mx-auto mt-6 px-8 py-4 rounded-2xl justify-between items-center transition-all duration-300 ${showNavbar ? "translate-y-0 opacity-100" : "translate-y-32 opacity-0"}`}
+      className={`top-6 fixed left-1/2 -translate-x-1/2 z-50 flex w-[80%] mx-auto mt-6 px-8 py-4 rounded-2xl justify-between items-center transition-all duration-300 ${showNavbar ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
     >
       <Link to="/" className="text-xl font-bold">
         AI Resume Analyzer
@@ -121,6 +178,7 @@ export default function Home() {
     <div className="home-page relative min-h-screen">
       <Navbar showNavbar={showNavbar} />
       <Hero />
+      <Feature />
     </div>
   );
 }

@@ -1,13 +1,13 @@
 .home-page {
   min-height: 100vh;
-  background: white;
+  background: #f2f2f2;
   position: relative;
   overflow: hidden;
 }
 
 .home-page::before {
   content: "";
-  position: absolute;
+  position: fixed;
 
   top: -200px;
   right: -200px;

@@ -2,6 +2,86 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/Home.css";
 
+function HowItWorks() {
+  return (
+    <section id="how-it-works" className="w-[80%] mx-auto min-h-screen py-20">
+      <div className="text-center mb-10">
+        <h2 className="text-4xl font-bold mb-4">How It Works</h2>
+
+        <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          Follow three simple steps to receive detailed AI-powered feedback and
+          improve your resume for modern hiring systems.
+        </p>
+      </div>
+      <div className="flex">
+        {" "}
+        {/* scheme side*/}
+        <div className="w-[40%] flex flex-col items-center justify-center ">
+          {/* steps cards*/}
+          <div className="bg-white rounded-4xl p-8 shadow-xl w-80 transition duration-300 hover:-translate-y-1 text-center">
+            <p className="text-sm font-semibold text-black mb-2">Step 1</p>
+            <p className="font-bold text-lg text-blue-400">Upload Resume</p>
+          </div>
+
+          <div className="flex flex-col items-center h-25">
+            <div className="w-0.5 h-15 bg-gray-700"></div>
+            <div className="w-0.5 h-15 bg-gray-700"></div>
+          </div>
+
+          <div className="bg-white rounded-4xl p-8 shadow-xl w-80 transition duration-300 hover:-translate-y-1 text-center">
+            <p className="text-sm font-semibold text-black mb-2">Step 2</p>
+            <p className="font-bold text-lg text-blue-400">AI Analysis</p>
+          </div>
+
+          <div className="flex flex-col items-center h-25">
+            <div className="w-0.5 h-15 bg-gray-700"></div>
+            <div className="w-0.5 h-15 bg-gray-700"></div>
+          </div>
+
+          <div className="bg-white rounded-4xl p-8 shadow-xl w-80 transition duration-300 hover:-translate-y-1 text-center  ">
+            <p className="text-sm font-semibold text-black mb-2">Step 3</p>
+            <p className="font-bold text-lg text-blue-400">Recommendations</p>
+          </div>
+        </div>
+        {/* content side*/}
+        <div className="w-[60%] mx-auto items-center justify-center">
+          <div className="w-[60%] ml-[20%] mt-12">
+            <h1 className="text-2xl font-bold mb-4 text-blue-400">Step 1</h1>
+            <h2 className="text-xl font-bold mb-4">Upload Your Resume</h2>
+            <p className="text-gray-600 leading-relaxed">
+              Upload your resume in PDF or DOCX format. Our system securely
+              processes the document and prepares it for a comprehensive
+              AI-powered evaluation.
+            </p>
+            <div className="h-0.5 bg-gray-700 w-full mt-5"></div>
+          </div>
+
+          <div className="w-[60%] ml-[20%] mt-8">
+            <h1 className="text-2xl font-bold mb-4 text-blue-400">Step 2</h1>
+            <h2 className="text-xl font-bold mb-4">AI Analysis</h2>
+            <p className="text-gray-600 leading-relaxed">
+              The AI analyzes ATS compatibility, keyword optimization, resume
+              structure, formatting, and skill relevance to identify strengths
+              and improvement opportunities.
+            </p>
+            <div className="h-0.5 bg-gray-700 w-full mt-5"></div>
+          </div>
+
+          <div className="w-[60%] ml-[20%] mt-8 mb-12">
+            <h1 className="text-2xl font-bold mb-4 text-blue-400">Step 3</h1>
+            <h2 className="text-xl font-bold mb-4">Receive Recommendations</h2>
+            <p className="text-gray-600 leading-relaxed">
+              Receive a detailed report containing actionable insights,
+              personalized recommendations, and optimization strategies designed
+              to strengthen your applications and improve interview prospects.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Feature() {
   return (
     <section id="features" className="w-[80%] mx-auto min-h-screen py-20">
@@ -125,9 +205,9 @@ function Navbar({ showNavbar, scrolled }) {
     <nav
       className={`top-6 fixed left-1/2 -translate-x-1/2 z-50 flex w-[80%] mx-auto mt-6 px-8 py-4 rounded-2xl justify-between items-center transition-all duration-300 ${showNavbar ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"} ${scrolled ? "bg-white shadow-lg backdrop-blur-md" : "bg-transparent"}`}
     >
-      <Link to="/" className="text-xl font-bold">
+      <a href="/" className="text-xl font-bold scroll-smooth">
         AI Resume Analyzer
-      </Link>
+      </a>
 
       <div className="flex gap-8 text-gray-600">
         <a href="#features" className="hover:text-black">
@@ -181,6 +261,7 @@ export default function Home() {
       <Navbar showNavbar={showNavbar} scrolled={scrolled} />
       <Hero />
       <Feature />
+      <HowItWorks />
     </div>
   );
 }

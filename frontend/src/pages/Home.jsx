@@ -2,13 +2,105 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/Home.css";
 
+function Footer() {
+  return (
+    <footer className="w-full min-h-fit bg-white border-t border-gray-300 mt-20">
+      <div className="mx-auto py-12 w-[80%] flex gap-20">
+        <div className="w-[50%] mx-auto">
+          <h3 className="text-xl font-bold">AI Resume Analyzer</h3>
+          <p className="text-gray-600 mt-4 max-w-md">
+            Improve your resume through AI-powered analysis, ATS optimization,
+            and personalized recommendations.
+          </p>
+        </div>
+
+        <div className="w-[50%] flex flex-col gap-3">
+          <a
+            href="#features"
+            className="block mt-2 text-gray-600 hover:text-gray-800"
+          >
+            Features
+          </a>
+          <a
+            href="#how-it-works"
+            className="block mt-2 text-gray-600 hover:text-gray-800"
+          >
+            How It Works
+          </a>
+          <a
+            href="#about"
+            className="block mt-2 text-gray-600 hover:text-gray-800"
+          >
+            About
+          </a>
+        </div>
+      </div>
+      <div className="h-px bg-gray-300"></div>
+      <p className="text-center text-gray-500 text-sm">
+        © 2026 AI Resume Analyzer. All rights reserved.
+      </p>
+    </footer>
+  );
+}
+
+function About() {
+  return (
+    <section id="about" className="w-[80%] mx-auto min-h-fit py-20">
+      <div>
+        <h2 className="text-4xl font-bold mb-16">About AI Resume Analyzer</h2>
+      </div>
+
+      <div className="flex gap-16">
+        {/* Left side*/}
+        <div className="w-[60%]">
+          <p className="text-gray-600 leading-relaxed mb-6">
+            AI Resume Analyzer is designed to help job seekers create stronger
+            resumes through intelligent AI-powered analysis, ATS optimization,
+            and personalized feedback tailored to modern hiring practices.
+          </p>
+          <p className="text-gray-600 leading-relaxed">
+            Our platform evaluates resume structure, keyword usage, formatting,
+            and skill relevance to provide actionable recommendations that can
+            improve application quality, increase visibility to recruiters, and
+            enhance interview opportunities.
+          </p>
+        </div>
+
+        {/* Right side*/}
+        <div className="w-[40%] flex justify-center ">
+          <div className="bg-white rounded-xl p-8 shadow-xl w-95 transition duration-300 hover:-translate-y-1 text-center">
+            <h3 className="text-xl font-bold mb-6">What We Analyze</h3>
+            <ul className="font-bold text-lg text-gray-600 space-y-4">
+              <li className="flex items-center gap-2">
+                <span className="text-green-500">✓</span> ATS Compatibility
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-500">✓</span> Resume Structure
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-500">✓</span> Keyword Optimization
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-500">✓</span> Skill Analysis
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-500">✓</span> Personalized Feedback
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HowItWorks() {
   return (
     <section id="how-it-works" className="w-[80%] mx-auto min-h-screen py-20">
-      <div className="text-center mb-10">
+      <div className="mb-10">
         <h2 className="text-4xl font-bold mb-4">How It Works</h2>
 
-        <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+        <p className="text-gray-600 text-lg max-w-2xl">
           Follow three simple steps to receive detailed AI-powered feedback and
           improve your resume for modern hiring systems.
         </p>
@@ -176,7 +268,7 @@ function Hero() {
           {/* ATS Card*/}
           <div className="absolute -top-8 -right-3 bg-gray-50 rounded-xl p-4 shadow-lg px-5 py-3 z-10 transition duration-300 hover:-translate-y-1">
             {" "}
-            ATS Friendly ✓
+            ATS Friendly <span className="text-green-500">✓</span>
           </div>
           {/* Main card*/}
           <div className="bg-white rounded-xl p-8 shadow-2xl w-80 transition duration-300 hover:-translate-y-1">
@@ -185,14 +277,20 @@ function Hero() {
             <p className="text-gray-500 mt-1 mb-6 text-xl">out of 100</p>
             <h4 className="font-semibold mb-2">Skills Found</h4>
             <ul>
-              <li>✓ React</li>
-              <li>✓ Python</li>
-              <li>✓ Machine Learning</li>
+              <li>
+                <span className="text-green-500">✓</span> React
+              </li>
+              <li>
+                <span className="text-green-500">✓</span> Python
+              </li>
+              <li>
+                <span className="text-green-500">✓</span> Machine Learning
+              </li>
             </ul>
           </div>
           {/* Skills Card*/}
           <div className="absolute -bottom-6 right-10 bg-gray-100 rounded-xl px-5 py-3 shadow-lg transition duration-300 hover:-translate-y-1">
-            React ✓
+            React <span className="text-green-500">✓</span>
           </div>
         </div>
       </div>
@@ -262,6 +360,8 @@ export default function Home() {
       <Hero />
       <Feature />
       <HowItWorks />
+      <About />
+      <Footer />
     </div>
   );
 }

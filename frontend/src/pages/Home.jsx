@@ -255,12 +255,17 @@ function Hero() {
             </p>
           </div>
           <div className="flex flex-col lg:flex-row md:flex-row gap-4 justify-center ml-8">
-            <button className="bg-blue-600 rounded-xl px-6 py-3 text-white shadow-lg hover:bg-blue-500 transition font-medium">
-              Get Started
-            </button>
-            <button className="px-6 py-3 bg-gray-100 font-medium rounded-xl shadow-lg hover:bg-gray-200 transition">
-              learn More
-            </button>
+            <Link to="/upload">
+              <button className="bg-blue-600 rounded-xl px-6 py-3 text-white shadow-lg hover:bg-blue-500 transition font-medium">
+                Get Started
+              </button>
+            </Link>
+
+            <a href="#about">
+              <button className="px-6 py-3 bg-gray-100 font-medium rounded-xl shadow-lg hover:bg-gray-200 transition">
+                learn More
+              </button>
+            </a>
           </div>
         </div>
       </div>
@@ -301,11 +306,53 @@ function Hero() {
   );
 }
 
-function Navbar({ showNavbar, scrolled }) {
+function Navbar({ showNavbar, scrolled, menuOpen, setMenuOpen }) {
   return (
     <nav
       className={`top-0 fixed left-1/2 -translate-x-1/2 z-50 flex w-[90%] lg:w-[80%] mx-auto mt-6 px-8 py-4 rounded-2xl justify-between items-center transition-all duration-300 ${showNavbar ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"} ${scrolled ? "bg-white shadow-lg backdrop-blur-lg" : "bg-transparent"}`}
     >
+      {/* Hamburger menu */}
+      <div
+        className={`lg:hidden absolute top-15 left-[86%] md:left-[94%] -translate-x-1/2 w-[30%] md:w-[20%] bg-white shadow-lg rounded-xl p-2 md:p-4 flex flex-col gap-4 transition-all duration-300 z-50
+        ${menuOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-4 pointer-events-none"}`}
+      >
+        <a
+          href="#features"
+          className="hover:text-black text-gray-500 transition-colors"
+          onClick={() => setMenuOpen(false)}
+        >
+          Features
+        </a>
+        <a
+          href="#how-it-works"
+          className="hover:text-black text-gray-500 transition-colors"
+          onClick={() => setMenuOpen(false)}
+        >
+          How it works
+        </a>
+        <a
+          href="#about"
+          className="hover:text-black text-gray-500 transition-colors"
+          onClick={() => setMenuOpen(false)}
+        >
+          About
+        </a>
+
+        <Link
+          to="/login"
+          className="hover:text-black text-gray-500 transition-colors"
+          onClick={() => setMenuOpen(false)}
+        >
+          Login
+        </Link>
+        <Link
+          to="/signup"
+          className="hover:text-black text-gray-500 transition-colors"
+          onClick={() => setMenuOpen(false)}
+        >
+          Sign Up
+        </Link>
+      </div>
       <a href="/" className="text-xl font-bold scroll-smooth">
         AI Resume Analyzer
       </a>
@@ -330,6 +377,14 @@ function Navbar({ showNavbar, scrolled }) {
           Sign Up
         </Link>
       </div>
+      <button
+        className="lg:hidden text-2xl transition-all duration-300"
+        onClick={() => setMenuOpen(!menuOpen)}
+      >
+        <div className="bg-gray-100 rounded-[50%] w-10 h-10 flex items-center justify-center">
+          {menuOpen ? "✕" : "☰"}
+        </div>
+      </button>
     </nav>
   );
 }
@@ -337,6 +392,7 @@ function Navbar({ showNavbar, scrolled }) {
 export default function Home() {
   const [showNavbar, setShowNavbar] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -359,7 +415,12 @@ export default function Home() {
 
   return (
     <div className="home-page relative min-h-screen">
-      <Navbar showNavbar={showNavbar} scrolled={scrolled} />
+      <Navbar
+        showNavbar={showNavbar}
+        scrolled={scrolled}
+        menuOpen={menuOpen}
+        setMenuOpen={setMenuOpen}
+      />
       <Hero />
       <Feature />
       <HowItWorks />

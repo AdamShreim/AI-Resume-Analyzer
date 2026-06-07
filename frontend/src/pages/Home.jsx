@@ -45,7 +45,7 @@ function Footer() {
 
 function About() {
   return (
-    <section id="about" className="w-[80%] mx-auto min-h-fit py-24">
+    <section id="about" className="w-[80%] mx-auto min-h-fit lg:py-24">
       <div>
         <h2 className="text-4xl font-bold mb-16">About AI Resume Analyzer</h2>
       </div>
@@ -96,8 +96,11 @@ function About() {
 
 function HowItWorks() {
   return (
-    <section id="how-it-works" className="w-[80%] mx-auto min-h-screen py-24">
-      <div className="mb-10">
+    <section
+      id="how-it-works"
+      className="md:w-[90%] lg:w-[80%] w-[80%] mx-auto min-h-screen py-24"
+    >
+      <div className="mb-10 ">
         <h2 className="text-4xl font-bold mb-4">How It Works</h2>
 
         <p className="text-gray-600 text-lg max-w-2xl">
@@ -105,30 +108,30 @@ function HowItWorks() {
           improve your resume for modern hiring systems.
         </p>
       </div>
-      <div className="flex  flex-col lg:flex-row ">
+      <div className="flex flex-col lg:flex-row md:flex-row gap-16">
         {" "}
         {/* scheme side*/}
-        <div className=" lg:w-[40%] lg:flex flex-col items-center justify-center">
+        <div className="md:w-[40%] lg:w-[40%] lg:flex flex-col items-center justify-center md:mt-25 lg:mt-0 ">
           {/* steps cards*/}
-          <div className="bg-white rounded-4xl p-8 shadow-xl w-85 transition-all duration-300 hover:-translate-y-2 text-center hover:shadow-2xl">
+          <div className="bg-white rounded-4xl p-8 shadow-xl w-85 transition-all duration-300 hover:-translate-y-2 text-center hover:shadow-2xl mb-25">
             <p className="text-sm font-semibold text-black mb-2">Step 1</p>
             <p className="font-bold text-lg text-blue-400">Upload Resume</p>
           </div>
 
-          <div className="flex flex-col items-center h-25">
+          {/* <div className="flex flex-col items-center h-25">
             <div className="w-0.5 h-15 bg-gray-700"></div>
             <div className="w-0.5 h-15 bg-gray-700"></div>
-          </div>
+          </div> */}
 
-          <div className="bg-white rounded-4xl p-8 shadow-xl w-85 transition-all duration-300 hover:-translate-y-2 text-center hover:shadow-2xl">
+          <div className="bg-white rounded-4xl p-8 shadow-xl w-85 transition-all duration-300 hover:-translate-y-2 text-center hover:shadow-2xl mb-25">
             <p className="text-sm font-semibold text-black mb-2">Step 2</p>
             <p className="font-bold text-lg text-blue-400">AI Analysis</p>
           </div>
 
-          <div className="flex flex-col items-center h-25">
+          {/* <div className="flex flex-col items-center h-25">
             <div className="w-0.5 h-15 bg-gray-700"></div>
             <div className="w-0.5 h-15 bg-gray-700"></div>
-          </div>
+          </div> */}
 
           <div className="bg-white rounded-4xl p-8 shadow-xl w-85 transition-all duration-300 hover:-translate-y-2 text-center hover:shadow-2xl">
             <p className="text-sm font-semibold text-black mb-2">Step 3</p>
@@ -136,7 +139,7 @@ function HowItWorks() {
           </div>
         </div>
         {/* content side*/}
-        <div className=" lg:w-[60%] items-center justify-center">
+        <div className=" lg:w-[60%] items-center justify-center ">
           <div className=" lg:w-[60%] lg:ml-[20%] mt-12">
             <h1 className="text-2xl font-bold mb-4 text-blue-400">Step 1</h1>
             <h2 className="text-xl font-bold mb-4">Upload Your Resume</h2>
@@ -156,7 +159,7 @@ function HowItWorks() {
               structure, formatting, and skill relevance to identify strengths
               and improvement opportunities.
             </p>
-            <div className="h-0.75 lg:h-0.5  bg-gray-700 w-full mt-5"></div>
+            <div className="h-0.75 md:h-px lg:h-0.5  bg-gray-700 w-full mt-5"></div>
           </div>
 
           <div className="lg:w-[60%] lg:ml-[20%] mt-8 mb-12">
@@ -186,7 +189,7 @@ function Feature() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mx-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mx-8">
           {/* first card*/}
           <div className="bg-white rounded-xl p-8 shadow-2xl transition-all duration-300 hover:-translate-y-2 text-left hover:shadow-2xl">
             <p className="font-extrabold text-4xl mb-4 text-blue-400">01</p>
@@ -230,7 +233,7 @@ function Hero() {
   return (
     <section
       id="Hero"
-      className=" w-[90%] lg:w-[80%] mx-auto min-h-screen flex flex-col lg:flex-row items-center justify-between gap-16 py-24"
+      className=" w-[90%] lg:w-[80%] mx-auto lg:min-h-screen flex flex-col lg:flex-row md:flex-row items-center justify-between gap-16 py-24 z-1 relative"
     >
       {/* left side */}
       <div className="w-full lg:w-1/2 flex justify-start text-left">
@@ -241,7 +244,7 @@ function Hero() {
             </p>
           </div> */}
           <div className="text-left">
-            <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6 ml-8">
+            <h1 className="text-4xl lg:text-6xl md:text-5xl font-bold leading-tight mb-6 ml-8">
               Analyze, Improve and Optimize Your Resume with AI
             </h1>
             <p className="text-gray-600 text-lg mb-8 ml-8 text-left">
@@ -251,7 +254,7 @@ function Hero() {
               increase your chances of securing interviews.
             </p>
           </div>
-          <div className="flex flex-col lg:flex-row gap-4 justify-center ml-8">
+          <div className="flex flex-col lg:flex-row md:flex-row gap-4 justify-center ml-8">
             <button className="bg-blue-600 rounded-xl px-6 py-3 text-white shadow-lg hover:bg-blue-500 transition font-medium">
               Get Started
             </button>

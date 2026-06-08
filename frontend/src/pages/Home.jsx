@@ -255,7 +255,7 @@ function Hero() {
             </p>
           </div>
           <div className="flex flex-col lg:flex-row md:flex-row gap-4 justify-center ml-8">
-            <Link to="/upload">
+            <Link to="/resume-analysis">
               <button className="bg-blue-600 rounded-xl px-6 py-3 text-white shadow-lg hover:bg-blue-500 transition font-medium">
                 Get Started
               </button>

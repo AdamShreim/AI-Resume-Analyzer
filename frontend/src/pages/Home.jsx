@@ -113,6 +113,7 @@ function HowItWorks() {
         {/* scheme side*/}
         <div className="md:w-[40%] lg:w-[40%] lg:flex flex-col items-center justify-center md:mt-25 lg:mt-0 ">
           {/* steps cards*/}
+          {/* TODO: make the content side animates after hovering above the respective step*/}
           <div className="bg-white rounded-4xl p-8 shadow-xl w-85 transition-all duration-300 hover:-translate-y-2 text-center hover:shadow-2xl mb-25">
             <p className="text-sm font-semibold text-black mb-2">Step 1</p>
             <p className="font-bold text-lg text-blue-400">Upload Resume</p>

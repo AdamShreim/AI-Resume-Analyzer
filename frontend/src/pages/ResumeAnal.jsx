@@ -68,7 +68,10 @@ export default function ResumeAnal() {
 
           <div className="flex gap-3 mt-4">
             <button
-              onClick={() => setFile(null)}
+              onClick={() => {
+                setFile(null);
+                setShowResults(false);
+              }}
               className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400"
             >
               Remove File

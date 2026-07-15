@@ -1,7 +1,28 @@
 import { useState } from "react";
 import { useMemo } from "react";
+import axios from "axios";
 
 export default function ResumeAnal() {
+  const [result, setResult] = useState(null);
+  //.........................................................
+  const handleAnalysis = async () => {
+    console.log("Button clicked");
+    if(!file) return;
+    const formData = new FormData();
+    formData.append("resume", file);
+    try {
+      const res = await axios.post("/api/analyze", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
+      console.log(res.data);
+      setResult(res.data);
+    } catch (error) {
+      console.error("Error occurred while analyzing resume:", error);
+    }
+  };
+  //........................................................
   const score = 99;
   const [showResults, setShowResults] = useState(false);
   const [file, setFile] = useState(null);
@@ -44,7 +65,7 @@ export default function ResumeAnal() {
       {/* upload card*/}
       <input
         type="file"
-        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+        accept=".pdf,.png,.jpg,.jpeg"
         id="resume-upload"
         className="hidden"
         onChange={(e) => setFile(e.target.files[0])}
@@ -110,8 +131,9 @@ export default function ResumeAnal() {
 
       <div className="items-center justify-center flex">
         <button
-          onClick={() => {
+          onClick={async() => {
             if (!file) return;
+            await handleAnalysis();
             setShowResults(true);
           }}
           className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-400 mt-6 shadow-lg transition"
@@ -123,6 +145,13 @@ export default function ResumeAnal() {
       {/*Results section */}
       {showResults && (
         <div className="w-[90%] lg:w-[60%] mx-auto mt-12 bg-white rounded-xl shadow-lg p-8 mb-12">
+          {result && (
+            <div className="bg-blue-100 p-4 rounded mb-4">
+              <p>{result.score}</p>
+              <p>{result.feedback}</p>
+              <pre>{result.text}</pre>
+            </div>
+          )}
           <h2 className="text-2xl font-bold mb-4">Analysis Results</h2>
           {/*ATS card */}
           <div className="bg-gray-100 rounded-xl p-8 text-center shadow-md mb-8">

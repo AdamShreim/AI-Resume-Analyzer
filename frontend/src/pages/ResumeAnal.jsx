@@ -7,14 +7,14 @@ export default function ResumeAnal() {
   //.........................................................
   const handleAnalysis = async () => {
     console.log("Button clicked");
-    if(!file) return;
+    if (!file) return;
     const formData = new FormData();
     formData.append("resume", file);
     try {
       const res = await axios.post("/api/analyze", formData, {
         headers: {
-          "Content-Type": "multipart/form-data"
-        }
+          "Content-Type": "multipart/form-data",
+        },
       });
       console.log(res.data);
       setResult(res.data);
@@ -131,7 +131,7 @@ export default function ResumeAnal() {
 
       <div className="items-center justify-center flex">
         <button
-          onClick={async() => {
+          onClick={async () => {
             if (!file) return;
             await handleAnalysis();
             setShowResults(true);

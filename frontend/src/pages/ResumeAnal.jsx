@@ -16,7 +16,7 @@ export default function ResumeAnal() {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log(res.data);
+      //console.log(res.data);
       setResult(res.data);
     } catch (error) {
       console.error("Error occurred while analyzing resume:", error);
@@ -147,9 +147,52 @@ export default function ResumeAnal() {
         <div className="w-[90%] lg:w-[60%] mx-auto mt-12 bg-white rounded-xl shadow-lg p-8 mb-12">
           {result && (
             <div className="bg-blue-100 p-4 rounded mb-4">
-              <p>{result.score}</p>
-              <p>{result.feedback}</p>
-              <pre>{result.text}</pre>
+              <h2 className="text-xl font-bold mb-2">
+                Score: {result?.score ?? "N/A"}
+              </h2>
+
+              <div>
+                <h3 className="font-semibold">Strengths:</h3>
+                <ul className="list-disc ml-5">
+                  {result?.strengths?.map((s, index) => (
+                    <li key={index}>{s}</li>
+                  )) || <p>No data</p>}
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mt-3">Weaknesses:</h3>
+                <ul className="list-disc ml-5">
+                  {result?.weaknesses?.map((w, index) => (
+                    <li key={index}>{w}</li>
+                  )) || <p>No data</p>}
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mt-3">Suggestions:</h3>
+                <ul className="list-disc ml-5">
+                  {result?.suggestions?.map((s, index) => (
+                    <li key={index}>{s}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mt-3">Keywords Present:</h3>
+                <ul className="list-disc ml-5">
+                  {result?.keywords_present?.map((k, i) => (
+                    <li key={i}>{k}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold mt-3">Keywords Missing:</h3>
+                <ul className="list-disc ml-5">
+                  {result?.keywords_missing?.map((k, i) => (
+                    <li key={i}>{k}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
           <h2 className="text-2xl font-bold mb-4">Analysis Results</h2>

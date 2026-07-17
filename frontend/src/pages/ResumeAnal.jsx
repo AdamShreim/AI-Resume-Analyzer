@@ -6,10 +6,11 @@ export default function ResumeAnal() {
   const [result, setResult] = useState(null);
   //.........................................................
   const handleAnalysis = async () => {
-    console.log("Button clicked");
+    // console.log("Button clicked");
     if (!file) return;
     const formData = new FormData();
     formData.append("resume", file);
+    formData.append("jobDescription", jobDescription);
     try {
       const res = await axios.post("/api/analyze", formData, {
         headers: {
@@ -26,6 +27,7 @@ export default function ResumeAnal() {
   const score = 99;
   const [showResults, setShowResults] = useState(false);
   const [file, setFile] = useState(null);
+  const [jobDescription, setJobDescription] = useState("");
   {
     /* TODO: Replace with createObjectURL cleanup using useEffect*/
   }
@@ -107,27 +109,36 @@ export default function ResumeAnal() {
           </div>
         </div>
       ) : (
-        <div
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          className="w-[90%] lg:w-[60%] h-125 border-2 border-dashed border-gray-400 mx-auto bg-gray-200 rounded-xl p-6 shadow-lg relative items-center justify-center flex flex-col gap-4 hover:border-black transition-colors duration-300"
-        >
-          <p className="text-gray-600">
-            Drag and drop your resume here, or click to browse files.
-          </p>
-          <label
-            htmlFor="resume-upload"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 shadow-lg transition cursor-pointer"
+        <div className="flex flex-col items-center gap-3">
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            className="w-[90%] lg:w-[60%] h-125 border-2 border-dashed border-gray-400 mx-auto bg-gray-200 rounded-xl p-6 shadow-lg relative items-center justify-center flex flex-col gap-4 hover:border-black transition-colors duration-300"
           >
-            Browse Files
-          </label>
-          {file && (
-            <p className="text-green-600 font-medium">
-              Selected File: {file.name}
+            <p className="text-gray-600">
+              Drag and drop your resume here, or click to browse files.
             </p>
-          )}
+            <label
+              htmlFor="resume-upload"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 shadow-lg transition cursor-pointer"
+            >
+              Browse Files
+            </label>
+            {file && (
+              <p className="text-green-600 font-medium">
+                Selected File: {file.name}
+              </p>
+            )}
+          </div>
         </div>
       )}
+
+      <textarea
+        placeholder="Enter job description..."
+        value={jobDescription}
+        onChange={(e) => setJobDescription(e.target.value)}
+        className="p-2 border rounded mb-4 w-[90%] lg:w-[30%] flex items-center justify-center mx-auto mt-6"
+      />
 
       <div className="items-center justify-center flex">
         <button
@@ -174,7 +185,7 @@ export default function ResumeAnal() {
                 <ul className="list-disc ml-5">
                   {result?.suggestions?.map((s, index) => (
                     <li key={index}>{s}</li>
-                  ))}
+                  )) || <p>No data</p>}
                 </ul>
               </div>
               <div>
@@ -182,7 +193,7 @@ export default function ResumeAnal() {
                 <ul className="list-disc ml-5">
                   {result?.keywords_present?.map((k, i) => (
                     <li key={i}>{k}</li>
-                  ))}
+                  )) || <p>No data</p>}
                 </ul>
               </div>
               <div>
@@ -190,7 +201,7 @@ export default function ResumeAnal() {
                 <ul className="list-disc ml-5">
                   {result?.keywords_missing?.map((k, i) => (
                     <li key={i}>{k}</li>
-                  ))}
+                  )) || <p>No data</p>}
                 </ul>
               </div>
             </div>

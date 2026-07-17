@@ -46,65 +46,99 @@ app.post("/api/analyze", upload.single("resume"), async (req, res) => {
     const filePath = req.file.path;
     const dataBuffer = fs.readFileSync(filePath);
 
+    const jobDescription = req.body.jobDescription || "";
     const pdfData = await pdfParse(dataBuffer);
     const text = pdfData.text;
     const cleanedText = text.replace(/\s+/g, " ").trim();
+    const limitedText = cleanedText.slice(0, 8000); // Limit to first 8000 characters
 
-    const aiResponse = await openai.chat.completions.create({
-      model: "llama-3.1-8b-instant",
-      messages: [
-        {
-          role: "system",
-          content: "You are a strict professional resume reviewer.",
-        },
-        {
-          role: "user",
-          content: `You are an ATS (Applicant Tracking System) resume evaluator.
+    const aiResponse = await openai.responses.create({
+      model: "llama-3.3-70b-versatile",
+      temperature: 0,
+      input: `
+            You are a strict professional resume reviewer.
 
-                  Analyze the following resume against a typical job market standard.
+            You are an advanced ATS (Applicant Tracking System) resume analyzer.
 
-                  IMPORTANT:
-                  - Return ONLY valid JSON
-                  - No explanations outside JSON
-                  - Be strict and realistic like a real ATS system
+            You will be given:
+            1. A JOB DESCRIPTION
+            2. A RESUME
 
-                  Evaluation criteria:
-                  1. Keyword relevance (skills, technologies, roles)
-                  2. Resume structure (sections like education, experience, skills)
-                  3. Clarity and readability
-                  4. Professional tone
-                  5. Experience quality
+            Your job is to extract, compare, and evaluate keywords accurately.
 
-                  Also:
-                  - Identify important industry keywords that are MISSING
-                  - Extract keywords that are PRESENT
+            ========================
+            DEFINITIONS (VERY IMPORTANT)
+            ========================
 
-                  Return JSON in this exact format:
+            - "keywords_present":
+              Keywords that appear in BOTH the job description AND the resume.
 
-                  {
-                    "score": number (0-100),
-                    "strengths": string[],
-                    "weaknesses": string[],
-                    "suggestions": string[],
-                    "keywords_present": string[],
-                    "keywords_missing": string[]
-                  }
+            - "keywords_missing":
+              Keywords that appear in the job description BUT DO NOT appear in the resume.
 
-                  Resume:
-                  ${text}
-                  `,
-        },
-      ],
+            These must be based ONLY on the job description.
+            Do NOT include keywords that exist only in the resume.
+
+            ========================
+            STRICT RULES
+            ========================
+
+            - Return ONLY valid JSON (no explanation, no text outside JSON)
+            - Be strict and realistic like a real ATS system
+            - Do NOT leave arrays empty (unless absolutely unavoidable)
+            - Extract ONLY meaningful professional keywords:
+              (skills, technologies, tools, frameworks, roles, certifications)
+            - IGNORE soft skills
+            - Normalize similar terms:
+              (React.js = React, Node.js = Node, JS = JavaScript)
+            - Avoid duplicates
+            - Return at least 5–15 keywords if possible
+
+            ========================
+            PROCESS
+            ========================
+
+            1. Extract keywords from the JOB DESCRIPTION
+            2. Extract keywords from the RESUME
+            3. Compare both lists carefully
+            4. Build:
+              - keywords_present
+              - keywords_missing
+            5. Calculate ATS score (0–100)
+            6. Provide strengths, weaknesses, suggestions
+
+            ========================
+            RETURN FORMAT
+            ========================
+
+            {
+              "score": number,
+              "strengths": string[],
+              "weaknesses": string[],
+              "suggestions": string[],
+              "keywords_present": string[],
+              "keywords_missing": string[]
+            }
+
+            ========================
+            INPUT
+            ========================
+
+            JOB DESCRIPTION:
+            ${jobDescription}
+
+            RESUME:
+            ${limitedText}
+            `,
     });
 
-    const result = aiResponse.choices[0].message.content;
+    const result = aiResponse.output_text;
     let parsed;
     try {
       const clean = result.replace(/```json|```/g, "").trim();
       parsed = JSON.parse(clean);
     } catch (e) {
       console.log("Failed to parse AI response as JSON:", e);
-      return res.status(500).json({ error: "Failed to parse AI response" });
 
       parsed = {
         score: 0,
@@ -117,7 +151,12 @@ app.post("/api/analyze", upload.single("resume"), async (req, res) => {
     }
     console.log("AI Response:", result);
 
-    fs.unlinkSync(filePath); // Clean up the uploaded file
+    try {
+      // Clean up the uploaded file
+      fs.unlinkSync(filePath);
+    } catch (e) {
+      console.log("File cleanup failed:", e);
+    }
     res.json(parsed);
   } catch (err) {
     console.error("PDF parsing error:", err);

@@ -55,70 +55,64 @@ app.post("/api/analyze", upload.single("resume"), async (req, res) => {
     const aiResponse = await openai.responses.create({
       model: "llama-3.3-70b-versatile",
       temperature: 0,
-      input: `
-            You are a strict professional resume reviewer.
+      input: `You are an ATS (Applicant Tracking System) analyzer.
 
-            You are an advanced ATS (Applicant Tracking System) resume analyzer.
+            Your job is to STRICTLY compare a resume against a job description.
 
-            You will be given:
-            1. A JOB DESCRIPTION
-            2. A RESUME
+            Follow these steps EXACTLY:
 
-            Your job is to extract, compare, and evaluate keywords accurately.
+            1. Extract all important keywords from the job description:
+              - skills (programming languages, frameworks, tools)
+              - technologies
+              - role-specific requirements
+              - soft requirements if clearly stated
 
-            ========================
-            DEFINITIONS (VERY IMPORTANT)
-            ========================
+            2. Extract all relevant keywords from the resume.
 
-            - "keywords_present":
-              Keywords that appear in BOTH the job description AND the resume.
+            3. Categorize job description keywords into:
+              - REQUIRED (must-have skills)
+              - OPTIONAL (nice-to-have skills)
 
-            - "keywords_missing":
-              Keywords that appear in the job description BUT DO NOT appear in the resume.
+            4. Compare resume vs job description:
+              - matched_keywords: keywords present in both
+              - missing_keywords: required keywords not found in resume
+              - extra_keywords: in resume but not required
 
-            These must be based ONLY on the job description.
-            Do NOT include keywords that exist only in the resume.
+            5. SCORING RULES (STRICT):
+              - Start score at 100
+              - For EACH missing REQUIRED keyword → subtract 8 points
+              - For EACH missing OPTIONAL keyword → subtract 3 points
+              - Minimum score = 0
+              - Maximum score = 100
+              - DO NOT round to nearest 10
+              - Return exact integer score
 
-            ========================
-            STRICT RULES
-            ========================
+            6. Generate strengths and weaknesses:
+              - Strengths: matched keywords, relevant experience, certifications
+              - Weaknesses: missing required keywords, lack of experience, missing certifications
 
-            - Return ONLY valid JSON (no explanation, no text outside JSON)
-            - Be strict and realistic like a real ATS system
-            - Do NOT leave arrays empty (unless absolutely unavoidable)
-            - Extract ONLY meaningful professional keywords:
-              (skills, technologies, tools, frameworks, roles, certifications)
-            - IGNORE soft skills
-            - Normalize similar terms:
-              (React.js = React, Node.js = Node, JS = JavaScript)
-            - Avoid duplicates
-            - Return at least 5–15 keywords if possible
+            7. Generate suggestions:
+              - Be SPECIFIC (mention exact missing keywords)
+              - Suggest where to add them (skills, projects, experience)
 
-            ========================
-            PROCESS
-            ========================
-
-            1. Extract keywords from the JOB DESCRIPTION
-            2. Extract keywords from the RESUME
-            3. Compare both lists carefully
-            4. Build:
-              - keywords_present
-              - keywords_missing
-            5. Calculate ATS score (0–100)
-            6. Provide strengths, weaknesses, suggestions
-
-            ========================
-            RETURN FORMAT
-            ========================
+            8. Output ONLY valid JSON in this exact format:
 
             {
               "score": number,
-              "strengths": string[],
-              "weaknesses": string[],
-              "suggestions": string[],
-              "keywords_present": string[],
-              "keywords_missing": string[]
+              "keywords_present": [],
+              "keywords_missing": [],
+              "strengths": [],
+              "weaknesses": [],
+              "suggestions": []
             }
+
+            DO NOT:
+            - Add explanations outside JSON
+            - Round scores artificially
+            - Skip steps
+            - Guess randomly
+
+            Be strict and deterministic.
 
             ========================
             INPUT

@@ -1,17 +1,25 @@
-import { useState } from "react";
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import "../App.css";
 
 export default function ResumeAnal() {
   const [result, setResult] = useState(null);
+  const [showResults, setShowResults] = useState(false);
+  const [file, setFile] = useState(null);
+  const [jobDescription, setJobDescription] = useState("");
+  const [fileUrl, setFileUrl] = useState(null);
+  const [loading, setLoading] = useState(false);
+  // const [fileUrl, setFileUrl] = useState(null);
   //.........................................................
+  //apr request to backend for analysis
   const handleAnalysis = async () => {
     // console.log("Button clicked");
     if (!file) return;
-    const formData = new FormData();
-    formData.append("resume", file);
-    formData.append("jobDescription", jobDescription);
     try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("resume", file);
+      formData.append("jobDescription", jobDescription);
       const res = await axios.post("/api/analyze", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -21,40 +29,53 @@ export default function ResumeAnal() {
       setResult(res.data);
     } catch (error) {
       console.error("Error occurred while analyzing resume:", error);
+    } finally {
+      setLoading(false);
     }
   };
   //........................................................
-  const score = 99;
-  const [showResults, setShowResults] = useState(false);
-  const [file, setFile] = useState(null);
-  const [jobDescription, setJobDescription] = useState("");
-  {
-    /* TODO: Replace with createObjectURL cleanup using useEffect*/
-  }
-  const fileUrl = useMemo(() => {
-    return file ? URL.createObjectURL(file) : null;
-  }, [file]);
 
+  useEffect(() => {
+    return () => {
+      if (fileUrl) {
+        URL.revokeObjectURL(fileUrl);
+      }
+    };
+  }, []);
+  //file handling functions
   const handleDrop = (e) => {
     e.preventDefault();
-
     const droppedFile = e.dataTransfer.files[0];
-
-    if (droppedFile) {
-      setFile(droppedFile);
-    }
+    handleFileChange(droppedFile);
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
   };
 
-  const getRating = (score) => {
-    if (score >= 80) return "Excellent";
-    if (score >= 60) return "Good";
-    return "Needs Improvements";
+  const handleFileChange = (newFile) => {
+    if (!newFile) return;
+
+    // cleanup old URL
+    if (fileUrl) {
+      URL.revokeObjectURL(fileUrl);
+    }
+    const url = URL.createObjectURL(newFile);
+
+    setFile(newFile);
+    setFileUrl(url);
   };
 
+  const handleRemoveFile = () => {
+    if (fileUrl) {
+      URL.revokeObjectURL(fileUrl);
+    }
+
+    setFile(null);
+    setFileUrl(null);
+    setShowResults(false);
+  };
+  //end of file handling functions
   return (
     <div className="home-page min-h-screen relative">
       <div className="w-[90%] lg:w-[60%] mx-auto relative mt-10">
@@ -70,7 +91,7 @@ export default function ResumeAnal() {
         accept=".pdf,.png,.jpg,.jpeg"
         id="resume-upload"
         className="hidden"
-        onChange={(e) => setFile(e.target.files[0])}
+        onChange={(e) => handleFileChange(e.target.files[0])}
       />
       {file ? (
         <div className="flex flex-col items-center gap-3">
@@ -91,10 +112,7 @@ export default function ResumeAnal() {
 
           <div className="flex gap-3 mt-4">
             <button
-              onClick={() => {
-                setFile(null);
-                setShowResults(false);
-              }}
+              onClick={handleRemoveFile}
               className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400"
             >
               Remove File
@@ -132,7 +150,7 @@ export default function ResumeAnal() {
           </div>
         </div>
       )}
-
+      {/* Job description input */}
       <textarea
         placeholder="Enter job description..."
         value={jobDescription}
@@ -147,125 +165,94 @@ export default function ResumeAnal() {
             await handleAnalysis();
             setShowResults(true);
           }}
+          disabled={loading}
+          style={{
+            opacity: loading ? 0.6 : 1,
+            cursor: loading ? "not-allowed" : "pointer",
+          }}
           className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-400 mt-6 shadow-lg transition"
         >
-          Analyze Resume
+          {loading
+            ? loading && <div className="spinner"></div>
+            : "Analyze Resume"}
         </button>
       </div>
 
       {/*Results section */}
+
       {showResults && (
         <div className="w-[90%] lg:w-[60%] mx-auto mt-12 bg-white rounded-xl shadow-lg p-8 mb-12">
+          <h2 className="text-2xl font-bold mb-4">Analysis Results</h2>
           {result && (
-            <div className="bg-blue-100 p-4 rounded mb-4">
-              <h2 className="text-xl font-bold mb-2">
-                Score: {result?.score ?? "N/A"}
-              </h2>
-
-              <div>
-                <h3 className="font-semibold">Strengths:</h3>
-                <ul className="list-disc ml-5">
-                  {result?.strengths?.map((s, index) => (
-                    <li key={index}>{s}</li>
-                  )) || <p>No data</p>}
-                </ul>
+            <div className="flext rounded mb-4">
+              <div className="">
+                <h2 className="text-xl font-bold mb-4">
+                  Score: {result?.score ?? "N/A"}
+                </h2>
               </div>
 
-              <div>
-                <h3 className="font-semibold mt-3">Weaknesses:</h3>
-                <ul className="list-disc ml-5">
-                  {result?.weaknesses?.map((w, index) => (
-                    <li key={index}>{w}</li>
-                  )) || <p>No data</p>}
-                </ul>
+              {/* Results Cards */}
+              <div className="grid grid-cols-1  lg:grid-cols-2 lg:gap-5">
+                {/* strength card */}
+                <div className="bg-gray-100 rounded-xl p-8 shadow-md mb-8">
+                  <h3 className="text-xl font-bold mb-2">Strengths:</h3>
+                  <ul className="list-disc ml-5">
+                    {result?.strengths?.map((s, index) => (
+                      <li key={index} className="text-green-600">
+                        <span className="text-black">{s}</span>
+                      </li>
+                    )) || <p>No data</p>}
+                  </ul>
+                </div>
+
+                {/*Weaknesses card*/}
+                <div className="bg-gray-100 rounded-xl p-8 shadow-md mb-8">
+                  <h3 className="font-bold mb-2 text-xl">Weaknesses:</h3>
+                  <ul className="list-disc ml-5">
+                    {result?.weaknesses?.map((w, index) => (
+                      <li key={index} className="text-red-600">
+                        <span className="text-black">{w}</span>
+                      </li>
+                    )) || <p>No data</p>}
+                  </ul>
+                </div>
+
+                {/* Keywords Present and Missing card */}
+                <div className="bg-gray-100 rounded-xl p-8 shadow-md mb-8">
+                  <h3 className="font-bold mb-2 text-xl">Keywords Present:</h3>
+                  <ul className="list-disc ml-5">
+                    {result?.keywords_present?.map((k, i) => (
+                      <li key={i} className="text-green-600">
+                        <span className="text-black">{k}</span>
+                      </li>
+                    )) || <p>No data</p>}
+                  </ul>
+                </div>
+                <div className="bg-gray-100 rounded-xl p-8 shadow-md mb-8">
+                  <h3 className="font-bold mb-2 text-xl">Keywords Missing:</h3>
+                  <ul className="list-disc ml-5">
+                    {result?.keywords_missing?.map((k, i) => (
+                      <li key={i} className="text-red-600">
+                        <span className="text-black">{k}</span>
+                      </li>
+                    )) || <p>No data</p>}
+                  </ul>
+                </div>
               </div>
 
-              <div>
-                <h3 className="font-semibold mt-3">Suggestions:</h3>
+              {/* Suggestions card*/}
+              <div className="bg-gray-100 rounded-xl p-8 shadow-md mb-8">
+                <h3 className="font-bold mb-2 text-xl">Suggestions:</h3>
                 <ul className="list-disc ml-5">
                   {result?.suggestions?.map((s, index) => (
-                    <li key={index}>{s}</li>
-                  )) || <p>No data</p>}
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-semibold mt-3">Keywords Present:</h3>
-                <ul className="list-disc ml-5">
-                  {result?.keywords_present?.map((k, i) => (
-                    <li key={i}>{k}</li>
-                  )) || <p>No data</p>}
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-semibold mt-3">Keywords Missing:</h3>
-                <ul className="list-disc ml-5">
-                  {result?.keywords_missing?.map((k, i) => (
-                    <li key={i}>{k}</li>
+                    <li key={index} className="text-green-600">
+                      <span className="text-black">{s}</span>
+                    </li>
                   )) || <p>No data</p>}
                 </ul>
               </div>
             </div>
           )}
-          <h2 className="text-2xl font-bold mb-4">Analysis Results</h2>
-          {/*ATS card */}
-          <div className="bg-gray-100 rounded-xl p-8 text-center shadow-md mb-8">
-            <h3 className="text-xl font-bold mb-3">ATS Score</h3>
-
-            <p className="text-5xl font-bold text-green-600">{score}</p>
-
-            <p className="text-gray-500 mt-2">out of 100</p>
-
-            <p className="font-medium mt-4 text-green-600">
-              {getRating(score)}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-5">
-            {/* strength card */}
-            <div className="bg-gray-100 rounded-xl p-8 text-center shadow-md mb-8">
-              <h3 className="text-xl font-bold mb-2">Strengths</h3>
-              <ul className="mb-6 space-y-3">
-                <li>
-                  <span className="text-green-600">✓</span> React
-                </li>
-                <li>
-                  <span className="text-green-500">✓</span> Python
-                </li>
-                <li>
-                  <span className="text-green-500">✓</span> Machine Learning
-                </li>
-              </ul>
-            </div>
-
-            {/*Suggestion card*/}
-            <div className="bg-gray-100 rounded-xl p-8 text-center shadow-md mb-8">
-              <h3 className="font-bold mb-2 text-xl">Suggestions</h3>
-              <ul className="mb-6 space-y-3">
-                <li>• Add more project details</li>
-                <li>• Improve summary section</li>
-                <li>• Include more ATS keywords</li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Missing Keyword card*/}
-          <div className="bg-gray-100 rounded-xl p-8 text-center shadow-md mb-8">
-            <h3 className="font-bold text-xl mb-2">Missing Keywords</h3>
-            <div className="flex flex-wrap gap-3 justify-center">
-              <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full">
-                Git
-              </span>
-              <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full">
-                Docker
-              </span>
-              <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full">
-                SQL
-              </span>
-              <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full">
-                REST APIs
-              </span>
-            </div>
-          </div>
         </div>
       )}
     </div>

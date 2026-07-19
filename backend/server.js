@@ -32,6 +32,7 @@ app.get("/", (req, res) => {
 //     })
 // });
 
+//Analyze resume endpoint
 app.post("/api/analyze", upload.single("resume"), async (req, res) => {
   try {
     console.log("request received");
@@ -51,7 +52,7 @@ app.post("/api/analyze", upload.single("resume"), async (req, res) => {
     const text = pdfData.text;
     const cleanedText = text.replace(/\s+/g, " ").trim();
     const limitedText = cleanedText.slice(0, 8000); // Limit to first 8000 characters
-
+    //Analyzing API
     const aiResponse = await openai.responses.create({
       model: "llama-3.3-70b-versatile",
       temperature: 0,
@@ -141,6 +142,8 @@ app.post("/api/analyze", upload.single("resume"), async (req, res) => {
         suggestions: [],
         keywords_present: [],
         keywords_missing: [],
+        text: [],
+        resume_text: limitedText,
       };
     }
     console.log("AI Response:", result);
@@ -151,10 +154,54 @@ app.post("/api/analyze", upload.single("resume"), async (req, res) => {
     } catch (e) {
       console.log("File cleanup failed:", e);
     }
-    res.json(parsed);
+    res.json({
+      ...parsed,
+      resume_text: limitedText,
+    });
   } catch (err) {
     console.error("PDF parsing error:", err);
     res.status(500).json({ error: "Failed to analyze file" });
+  }
+});
+
+//Improve resume endpoint
+app.post("/api/improve", async (req, res) => {
+  // console.log(req.body);
+  const { jobDescription, resumeText } = req.body;
+  if (!jobDescription || !resumeText) {
+    return res
+      .status(400)
+      .json({ error: "Missing job description or resume text" });
+  }
+  try {
+    const prompt = `
+                    You are a professional resume writer and ATS optimizer.
+
+                    Your job is to rewrite and improve the given resume so it better matches the job description.
+
+                    RULES:
+                    - Do NOT invent fake experience
+                    - Improve wording and clarity
+                    - Add relevant missing keywords naturally
+                    - Keep it concise and professional
+                    - Keep same meaning, just improve
+
+                    JOB DESCRIPTION:
+                    ${jobDescription}
+
+                    RESUME:
+                    ${resumeText}
+
+                    Return ONLY the improved resume text.
+                    `;
+    const response = await openai.responses.create({
+      model: "llama-3.3-70b-versatile",
+      input: prompt,
+    });
+    res.json({ improvedResume: response.output_text });
+  } catch (err) {
+    console.error("Error improving resume:", err);
+    res.status(500).json({ error: "Failed to improve resume" });
   }
 });
 

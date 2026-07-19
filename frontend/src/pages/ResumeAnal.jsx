@@ -9,9 +9,11 @@ export default function ResumeAnal() {
   const [jobDescription, setJobDescription] = useState("");
   const [fileUrl, setFileUrl] = useState(null);
   const [loading, setLoading] = useState(false);
-  // const [fileUrl, setFileUrl] = useState(null);
+  const [improvedResume, setImprovedResume] = useState("");
+  const [isImproving, setIsImproving] = useState(false);
+  const [resumeText, setResumeText] = useState("");
   //.........................................................
-  //apr request to backend for analysis
+  //api request to backend for analysis
   const handleAnalysis = async () => {
     // console.log("Button clicked");
     if (!file) return;
@@ -25,8 +27,8 @@ export default function ResumeAnal() {
           "Content-Type": "multipart/form-data",
         },
       });
-      //console.log(res.data);
-      setResult(res.data);
+      setResumeText(res.data.resume_text); // Store the resume text for improvement
+      setResult(res.data); // Store the analysis results for display
     } catch (error) {
       console.error("Error occurred while analyzing resume:", error);
     } finally {
@@ -34,6 +36,21 @@ export default function ResumeAnal() {
     }
   };
   //........................................................
+
+  const handleImprove = async () => {
+    try {
+      setIsImproving(true);
+      const res = await axios.post("/api/improve", {
+        jobDescription,
+        resumeText: resumeText,
+      });
+      setImprovedResume(res.data.improvedResume);
+    } catch (error) {
+      console.error("Error occurred while improving resume:", error);
+    } finally {
+      setIsImproving(false);
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -251,6 +268,21 @@ export default function ResumeAnal() {
                   )) || <p>No data</p>}
                 </ul>
               </div>
+            </div>
+          )}
+
+          <button
+            onClick={handleImprove}
+            disabled={isImproving}
+            className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-400 mt-6 shadow-lg transition"
+          >
+            {isImproving ? "Improving..." : "Improve Resume"}
+          </button>
+          {improvedResume && (
+            <div>
+              <h3>Improved Resume</h3>
+
+              <pre style={{ whiteSpace: "pre-wrap" }}>{improvedResume}</pre>
             </div>
           )}
         </div>

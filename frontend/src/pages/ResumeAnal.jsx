@@ -22,7 +22,7 @@ export default function ResumeAnal() {
       const formData = new FormData();
       formData.append("resume", file);
       formData.append("jobDescription", jobDescription);
-      const res = await axios.post("/api/analyze", formData, {
+      const res = await axios.post("/api/ai/analyze", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -40,7 +40,7 @@ export default function ResumeAnal() {
   const handleImprove = async () => {
     try {
       setIsImproving(true);
-      const res = await axios.post("/api/improve", {
+      const res = await axios.post("/api/ai/improve", {
         jobDescription,
         resumeText: resumeText,
       });

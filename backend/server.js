@@ -1,5 +1,12 @@
+const bcrypt = require("bcrypt");
+const User = require("./models/User");
 const OpenAI = require("openai");
 const dotenv = require("dotenv");
+dotenv.config();
+const connectDB = require("./config/db");
+connectDB();
+const jwt = require("jsonwebtoken");
+const authMiddleware = require("./middleware/auth");
 
 const multer = require("multer");
 const fs = require("fs");
@@ -8,8 +15,6 @@ const rateLimit = require("express-rate-limit");
 
 const pdfParse = require("pdf-parse");
 
-
-dotenv.config();
 const openai = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1",
@@ -24,7 +29,7 @@ const limiter = rateLimit({
   max: 20, // Limit each IP to 20 requests per `window` (here, per 15 minutes)
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
-app.use("/api/ai", limiter);
+app.use("/api/ai", authMiddleware, limiter);
 
 app.get("/", (req, res) => {
   res.send("Hello, World!");
@@ -193,7 +198,12 @@ app.post("/api/ai/analyze", upload.single("resume"), async (req, res) => {
 app.post("/api/ai/improve", async (req, res) => {
   // console.log(req.body);
   const { jobDescription, resumeText } = req.body;
-  if (!jobDescription || !resumeText || resumeText.length < 50 || resumeText.length > 5000) {
+  if (
+    !jobDescription ||
+    !resumeText ||
+    resumeText.length < 50 ||
+    resumeText.length > 5000
+  ) {
     return res
       .status(400)
       .json({ error: "Invalid job description or resume text" });
@@ -277,7 +287,65 @@ app.post("/api/ai/improve", async (req, res) => {
     res.status(500).json({ error: "Failed to improve resume" });
   }
 });
+
+//Signup endpoint
+app.post("/api/auth/signup", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password || password.length < 6) {
+      return res.status(400).json({ error: "Invalid Input" });
+    }
+
+    //check if user exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "user already exists" });
+    }
+
+    //Hash Password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      email,
+      password: hashedPassword,
+    });
+
+    await user.save();
+
+    res.status(201).json({ message: "user created" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Signup fails" });
+  }
+});
 //..........................................................
+//login endpoint
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+    //create token
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
 app.listen(3000, () => {
   console.log(`Server is running on port 3000`);
 });

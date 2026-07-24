@@ -1,3 +1,4 @@
+const cors = require("cors");
 const bcrypt = require("bcrypt");
 const User = require("./models/User");
 const OpenAI = require("openai");
@@ -23,6 +24,11 @@ const openai = new OpenAI({
 const upload = multer({ dest: "uploads/" });
 const app = express();
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  }),
+);
 app.use(express.json());
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minute

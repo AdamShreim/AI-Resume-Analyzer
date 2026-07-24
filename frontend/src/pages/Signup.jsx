@@ -1,6 +1,30 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Signup() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  //handle Signup
+  const handleSignup = async (e) => {
+    e.preventDefault(); // prevents page reload
+    try {
+      const res = await axios.post("http://localhost:3000/api/auth/signup", {
+        email: email.trim(),
+        password: password.trim(),
+      });
+      console.log("Signup success:", res.data);
+      alert("Signup successful!");
+      navigate("/login");
+    } catch (err) {
+      console.log("Signup error : ", err.response?.data);
+      alert(err.response?.data?.message || "Signup failed");
+    }
+  };
+
   return (
     <div className=" min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="w-full max-w-md bg-white rounded-lg shadow-2xl p-8">
@@ -10,13 +34,14 @@ export default function Signup() {
         <p className="text-gray-700 text-center mb-6">
           Create your new acoount
         </p>
-        <form>
+        <form onSubmit={handleSignup}>
           <div className="mb-4">
             <label className="mb-1 font-medium">Email</label>
             <input
               type="email"
               placeholder="Enter your email"
               className="border border-gray-600 w-full rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 p-3"
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
@@ -26,6 +51,7 @@ export default function Signup() {
               type="password"
               placeholder="Create your password"
               className="w-full border border-gray-600 p-3 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 

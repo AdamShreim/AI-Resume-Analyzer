@@ -93,6 +93,7 @@ export default function ResumeAnal() {
     setShowResults(false);
   };
   //end of file handling functions
+  //........................................................
   return (
     <div className="home-page min-h-screen relative">
       <div className="w-[90%] lg:w-[60%] mx-auto relative mt-10">

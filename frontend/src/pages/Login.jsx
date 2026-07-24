@@ -1,6 +1,37 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  //handle login
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/login",
+        {
+          email: email.trim(),
+          password: password.trim(),
+        },
+      );
+
+      console.log("Login success:", response.data);
+
+      // save token
+      localStorage.setItem("token", response.data.token);
+      alert("Login successfull");
+      navigate("/dashboard");
+    } catch (error) {
+      console.log("Login error:", error.response?.data);
+      alert(error.response?.data?.message || "Login failed");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="w-full max-w-md bg-white p-8 rounded-x1 shadow-2xl rounded-lg">
@@ -8,13 +39,14 @@ export default function Login() {
           AI Resume Analyzer
         </h1>
         <p className="text-center text-gray-600 mb-6">Sign in to continue</p>
-        <form>
+        <form onSubmit={handleLogin}>
           <div className="mb-4">
             <label className="mb-1 font-medium">Email</label>
             <input
               type="email"
               placeholder="Enter your email"
               className="w-full border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
@@ -24,11 +56,12 @@ export default function Login() {
               type="password"
               placeholder="Enter your password"
               className="w-full border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
           <button
-            type=" submit"
+            type="submit"
             className="w-full bg-blue-500 text-white rounded-lg hover:bg-blue-600 p-2"
           >
             Login

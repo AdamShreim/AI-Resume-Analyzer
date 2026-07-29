@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../App.css";
 
 export default function ResumeAnal() {
+  const navigate = useNavigate();
   const [result, setResult] = useState(null);
   const [showResults, setShowResults] = useState(false);
   const [file, setFile] = useState(null);
@@ -11,26 +13,30 @@ export default function ResumeAnal() {
   const [loading, setLoading] = useState(false);
   const [improvedResume, setImprovedResume] = useState("");
   const [isImproving, setIsImproving] = useState(false);
-  const [resumeText, setResumeText] = useState("");
+
+  const [analysisId, setAnalysisId] = useState(null);
   //.........................................................
   //api request to backend for analysis
   const handleAnalysis = async () => {
-    // console.log("Button clicked");
     if (!file) return;
     try {
       setLoading(true);
+      const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("resume", file);
       formData.append("jobDescription", jobDescription);
       const res = await axios.post("/api/ai/analyze", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
         },
       });
-      setResumeText(res.data.resume_text); // Store the resume text for improvement
+      setAnalysisId(res.data._id);
       setResult(res.data); // Store the analysis results for display
+      setShowResults(true);
     } catch (error) {
       console.error("Error occurred while analyzing resume:", error);
+      setShowResults(false);
     } finally {
       setLoading(false);
     }
@@ -38,13 +44,26 @@ export default function ResumeAnal() {
   //........................................................
 
   const handleImprove = async () => {
+    if (!analysisId) {
+      console.error("Cannot improve without analysis ID");
+      return;
+    }
+
     try {
       setIsImproving(true);
-      const res = await axios.post("/api/ai/improve", {
-        jobDescription,
-        resumeText: resumeText,
-      });
-      setImprovedResume(res.data.improvedResume);
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        "/api/ai/improve",
+        {
+          analysisId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      setImprovedResume(res.data.improved);
     } catch (error) {
       console.error("Error occurred while improving resume:", error);
     } finally {
@@ -58,11 +77,12 @@ export default function ResumeAnal() {
         URL.revokeObjectURL(fileUrl);
       }
     };
-  }, []);
+  }, [fileUrl]);
   //file handling functions
   const handleDrop = (e) => {
     e.preventDefault();
     const droppedFile = e.dataTransfer.files[0];
+    if (!droppedFile || droppedFile.type !== "application/pdf") return;
     handleFileChange(droppedFile);
   };
 
@@ -71,7 +91,7 @@ export default function ResumeAnal() {
   };
 
   const handleFileChange = (newFile) => {
-    if (!newFile) return;
+    if (!newFile || newFile.type !== "application/pdf") return;
 
     // cleanup old URL
     if (fileUrl) {
@@ -106,7 +126,7 @@ export default function ResumeAnal() {
       {/* upload card*/}
       <input
         type="file"
-        accept=".pdf,.png,.jpg,.jpeg"
+        accept=".pdf"
         id="resume-upload"
         className="hidden"
         onChange={(e) => handleFileChange(e.target.files[0])}
@@ -286,6 +306,15 @@ export default function ResumeAnal() {
               <pre style={{ whiteSpace: "pre-wrap" }}>{improvedResume}</pre>
             </div>
           )}
+
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-500 shadow-lg transition"
+            >
+              Go to Dashboard
+            </button>
+          </div>
         </div>
       )}
     </div>

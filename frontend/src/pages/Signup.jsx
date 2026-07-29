@@ -12,7 +12,7 @@ export default function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault(); // prevents page reload
     try {
-      const res = await axios.post("http://localhost:3000/api/auth/signup", {
+      const res = await axios.post("/api/auth/signup", {
         email: email.trim(),
         password: password.trim(),
       });

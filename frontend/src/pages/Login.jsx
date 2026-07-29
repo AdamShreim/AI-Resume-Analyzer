@@ -12,13 +12,10 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
-        {
-          email: email.trim(),
-          password: password.trim(),
-        },
-      );
+      const response = await axios.post("/api/auth/login", {
+        email: email.trim(),
+        password: password.trim(),
+      });
 
       console.log("Login success:", response.data);
 

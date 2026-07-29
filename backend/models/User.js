@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+//...................email and password....................
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      reyuired: true,
+      required: true,
     },
   },
   { timestamps: true },

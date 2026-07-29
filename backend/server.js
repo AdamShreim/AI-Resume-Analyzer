@@ -8,14 +8,12 @@ const connectDB = require("./config/db");
 connectDB();
 const jwt = require("jsonwebtoken");
 const authMiddleware = require("./middleware/auth");
-
 const multer = require("multer");
 const fs = require("fs");
 const express = require("express");
 const rateLimit = require("express-rate-limit");
-
 const pdfParse = require("pdf-parse");
-
+const Analysis = require("./models/Analysis");
 const openai = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1",
@@ -41,39 +39,35 @@ app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
 
-// app.post("/api/test", (req, res) => {
-//     const { name, text } = req.body;
-//     res.json({
-//         score: 66,
-//         feedback: "do better next time"
-//     })
-// });
-
 //Analyze resume endpoint
-app.post("/api/ai/analyze", upload.single("resume"), async (req, res) => {
-  try {
-    console.log("request received");
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-    //Check file type
-    if (req.file.mimetype !== "application/pdf") {
-      return res.status(400).json({ error: "Only PDF files are allowed" });
-    }
+app.post(
+  "/api/ai/analyze",
+  authMiddleware,
+  upload.single("resume"),
+  async (req, res) => {
+    try {
+      console.log("request received");
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      //Check file type
+      if (req.file.mimetype !== "application/pdf") {
+        return res.status(400).json({ error: "Only PDF files are allowed" });
+      }
 
-    const filePath = req.file.path;
-    const dataBuffer = fs.readFileSync(filePath);
+      const filePath = req.file.path;
+      const dataBuffer = fs.readFileSync(filePath);
 
-    const jobDescription = req.body.jobDescription || "";
-    const pdfData = await pdfParse(dataBuffer);
-    const text = pdfData.text;
-    const cleanedText = text.replace(/\s+/g, " ").trim();
-    const limitedText = cleanedText.slice(0, 8000); // Limit to first 8000 characters
-    //Analyzing API
-    const aiResponse = await openai.responses.create({
-      model: "llama-3.3-70b-versatile",
-      temperature: 0,
-      input: `You are an ATS (Applicant Tracking System) analyzer.
+      const jobDescription = req.body.jobDescription || "";
+      const pdfData = await pdfParse(dataBuffer);
+      const text = pdfData.text;
+      const cleanedText = text.replace(/\s+/g, " ").trim();
+      const limitedText = cleanedText.slice(0, 8000); // Limit to first 8000 characters
+      //Analyzing API
+      const aiResponse = await openai.responses.create({
+        model: "llama-3.3-70b-versatile",
+        temperature: 0,
+        input: `You are an ATS (Applicant Tracking System) analyzer.
 
             Your job is to STRICTLY compare a resume against a job description.
 
@@ -143,6 +137,12 @@ app.post("/api/ai/analyze", upload.single("resume"), async (req, res) => {
               "suggestions": []
             }
 
+            IMPORTANT:
+            - Return exactly one JSON object and nothing else.
+            - Do not include markdown fences, code blocks, headings, or any text before or after the JSON.
+            - Do not include comments or explanatory text.
+            - Do not add any extra keys beyond the exact schema above.
+
             DO NOT:
             - Add explanations outside JSON
             - Round scores artificially
@@ -161,59 +161,103 @@ app.post("/api/ai/analyze", upload.single("resume"), async (req, res) => {
             RESUME:
             ${limitedText}
             `,
-    });
+      });
 
-    const result = aiResponse.output_text;
-    let parsed;
-    try {
-      const clean = result.replace(/```json|```/g, "").trim();
-      parsed = JSON.parse(clean);
-    } catch (e) {
-      console.log("Failed to parse AI response as JSON:", e);
+      const result =
+        aiResponse.output_text ||
+        (Array.isArray(aiResponse.output)
+          ? aiResponse.output
+              .map((item) =>
+                item.content?.map((content) => content.text || "").join(""),
+              )
+              .join("")
+          : "");
 
-      parsed = {
-        score: 0,
-        strengths: [],
-        weaknesses: [],
-        suggestions: [],
-        keywords_present: [],
-        keywords_missing: [],
-        text: [],
-        resume_text: limitedText,
+      const extractJson = (text) => {
+        const firstBrace = text.indexOf("{");
+        const lastBrace = text.lastIndexOf("}");
+        if (firstBrace >= 0 && lastBrace > firstBrace) {
+          return text.slice(firstBrace, lastBrace + 1);
+        }
+        return text;
       };
-    }
-    console.log("AI Response:", result);
 
-    try {
-      // Clean up the uploaded file
-      fs.unlinkSync(filePath);
-    } catch (e) {
-      console.log("File cleanup failed:", e);
+      let parsed;
+      try {
+        const clean = extractJson(result)
+          .replace(/```json|```/g, "")
+          .trim();
+        parsed = JSON.parse(clean);
+      } catch (e) {
+        console.log("Failed to parse AI response as JSON:", e);
+        console.log("AI raw output:", result);
+
+        parsed = {
+          score: 0,
+          strengths: [],
+          weaknesses: [],
+          suggestions: [],
+          keywords_present: [],
+          keywords_missing: [],
+          text: [],
+          resume_text: limitedText,
+        };
+      }
+
+      try {
+        const analysis = await Analysis.create({
+          userId: req.user.id,
+          jobDescription: jobDescription,
+          ...parsed,
+          resume_text: limitedText,
+          improved_resume: null, // not improved yet
+        });
+        try {
+          // Clean up the uploaded file
+          fs.unlinkSync(filePath);
+        } catch (e) {
+          console.log("File cleanup failed:", e);
+        }
+        return res.json(analysis);
+      } catch (e) {
+        console.log("Saving data failed", e);
+        return res.status(500).json({ error: "Failed to save analysis" });
+      }
+    } catch (err) {
+      console.error("PDF parsing error:", err);
+      res.status(500).json({ error: "Failed to analyze file" });
     }
-    res.json({
-      ...parsed,
-      resume_text: limitedText,
-    });
-  } catch (err) {
-    console.error("PDF parsing error:", err);
-    res.status(500).json({ error: "Failed to analyze file" });
-  }
-});
+  },
+);
 //..........................................................
 //Improve resume endpoint
-app.post("/api/ai/improve", async (req, res) => {
+app.post("/api/ai/improve", authMiddleware, async (req, res) => {
   // console.log(req.body);
-  const { jobDescription, resumeText } = req.body;
-  if (
-    !jobDescription ||
-    !resumeText ||
-    resumeText.length < 50 ||
-    resumeText.length > 5000
-  ) {
-    return res
-      .status(400)
-      .json({ error: "Invalid job description or resume text" });
+  const { analysisId } = req.body;
+
+  if (!analysisId) {
+    return res.status(400).json({ error: "analysisId required" });
   }
+
+  // GET ANALYSIS FROM DB
+  let analysis;
+  try {
+    analysis = await Analysis.findById(analysisId);
+  } catch (err) {
+    return res.status(500).json({ error: "DB error" });
+  }
+
+  if (!analysis) {
+    return res.status(404).json({ error: "Analysis not found" });
+  }
+
+  const resumeText = analysis.resume_text;
+  const jobDescription = analysis.jobDescription;
+
+  if (analysis.userId.toString() !== req.user.id) {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+
   try {
     const prompt = `
                                         You are a professional resume editor.
@@ -287,7 +331,13 @@ app.post("/api/ai/improve", async (req, res) => {
       model: "llama-3.3-70b-versatile",
       input: prompt,
     });
-    res.json({ improvedResume: response.output_text });
+
+    const improvedText = response.output_text;
+    // SAVE IMPROVED VERSION (NOT overwrite)
+    analysis.improved_resume = improvedText;
+    await analysis.save();
+
+    res.json({ original: analysis.resume_text, improved: improvedText });
   } catch (err) {
     console.error("Error improving resume:", err);
     res.status(500).json({ error: "Failed to improve resume" });
@@ -341,7 +391,7 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     //create token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
@@ -349,6 +399,76 @@ app.post("/api/auth/login", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Login failed" });
+  }
+});
+//..........................................................
+//get profile endpoint
+app.get("/api/user/profile", authMiddleware, async (req, res) => {
+  try {
+    console.log("DECODED:", req.user);
+    // req.user.id comes from JWT
+    const user = await User.findById(req.user.id).select("-password");
+
+    res.json({
+      user,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+//..........................................................
+//Get Analysis
+app.get("/api/analysis", authMiddleware, async (req, res) => {
+  try {
+    const analyses = await Analysis.find({ userId: req.user.id }).sort({
+      createdAt: -1,
+    });
+
+    res.json(analyses);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch analyses" });
+  }
+});
+
+//..........................................................
+//get analysis by id
+app.get("/api/analysis/:id", authMiddleware, async (req, res) => {
+  try {
+    const analysis = await Analysis.findById(req.params.id);
+
+    if (!analysis) {
+      return res.status(404).json({ error: "Not found" });
+    }
+
+    if (analysis.userId.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    res.json(analysis);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching analysis" });
+  }
+});
+
+app.delete("/api/analysis/:id", authMiddleware, async (req, res) => {
+  try {
+    const analysis = await Analysis.findById(req.params.id);
+
+    if (!analysis) {
+      return res.status(404).json({ error: "Analysis does not exist" });
+    }
+
+    if (analysis.userId.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    await Analysis.findByIdAndDelete(req.params.id);
+    res.json({ message: "Analysis deleted successfully" });
+  } catch (err) {
+    console.error("Delete error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

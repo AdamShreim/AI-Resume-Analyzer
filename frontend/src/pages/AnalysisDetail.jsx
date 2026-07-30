@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import apiClient, { getAuthHeaders } from "../api/client";
 
 export default function AnalysisDetail() {
   const { id } = useParams();
@@ -11,12 +11,10 @@ export default function AnalysisDetail() {
   useEffect(() => {
     const fetchAnalysis = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`/api/analysis/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await apiClient.get(
+          `/api/analysis/${id}`,
+          getAuthHeaders(),
+        );
         setResult(res.data);
       } catch (error) {
         console.error("Failed to load analysis details:", error);
@@ -37,12 +35,7 @@ export default function AnalysisDetail() {
     if (!confirmDelete) return;
 
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`/api/analysis/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await apiClient.delete(`/api/analysis/${id}`, getAuthHeaders());
       navigate("/dashboard");
     } catch (error) {
       console.error("Failed to delete analysis:", error);

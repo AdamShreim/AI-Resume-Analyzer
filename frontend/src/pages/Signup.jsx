@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import apiClient from "../api/client";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -12,7 +11,7 @@ export default function Signup() {
   const handleSignup = async (e) => {
     e.preventDefault(); // prevents page reload
     try {
-      const res = await axios.post("/api/auth/signup", {
+      const res = await apiClient.post("/api/auth/signup", {
         email: email.trim(),
         password: password.trim(),
       });

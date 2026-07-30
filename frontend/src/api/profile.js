@@ -1,13 +1,6 @@
-import axios from "axios";
+import apiClient, { getAuthHeaders } from "./client";
 
 export const getProfile = async () => {
-  const token = localStorage.getItem("token");
-
-  const res = await axios.get("/api/user/profile", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
+  const res = await apiClient.get("/api/user/profile", getAuthHeaders());
   return res.data;
 };

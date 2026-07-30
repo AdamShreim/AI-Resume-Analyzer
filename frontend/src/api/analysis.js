@@ -1,11 +1,6 @@
-import axios from "axios";
+import apiClient, { getAuthHeaders } from "./client";
 
 export const getAnalyses = async () => {
-  const token = localStorage.getItem("token");
-  const res = await axios.get("/api/analysis", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const res = await apiClient.get("/api/analysis", getAuthHeaders());
   return res.data;
 };

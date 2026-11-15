@@ -5,7 +5,6 @@ import AnalysisCard from "../components/AnalysisCard";
 import { useState, useEffect } from "react";
 
 export default function Dashboard() {
-  const [user, setUser] = useState(null);
   const [analyses, setAnalyses] = useState([]);
   const [loadingAnalyses, setLoadingAnalyses] = useState(false);
   const navigate = useNavigate();
@@ -19,8 +18,7 @@ export default function Dashboard() {
 
     const fetchUser = async () => {
       try {
-        const data = await getProfile();
-        setUser(data.user);
+        await getProfile();
       } catch (err) {
         console.error(
           "ERROR fetching user:",
@@ -50,24 +48,20 @@ export default function Dashboard() {
 
   return (
     <div className="home-page min-h-screen relative ">
-      <div>
-        <h1>Dashboard</h1>
-        {user ? <p>Welcome {user.email}</p> : <p>Loading...</p>}
-      </div>
-      <div>
+      <div className="w-[90%] lg:w-[70%] mx-auto pt-8 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
         <button
           onClick={() => {
             localStorage.removeItem("token");
             navigate("/login");
           }}
-          className="bg-red-500 text-white px-4 py-2 rounded-lg"
+          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition z-10"
         >
           Logout
         </button>
       </div>
       <div className="w-[90%] lg:w-[70%] mx-auto py-10 relative bg-white rounded-2xl my-10 shadow-2xl p-8">
         <div>
-          <h1 className="font-bold text-4xl mb-4">Dashboard</h1>
           <p className="text-gray-600 text-xl mb-10">
             Manage your resume and track your progress
           </p>

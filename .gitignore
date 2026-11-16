@@ -1,0 +1,31 @@
+# Installed dependencies (root, backend, and frontend)
+node_modules/
+
+# Environment secrets; keep example configuration shareable
+.env
+.env.*
+!.env.example
+
+# Uploaded resumes
+uploads/
+
+# Generated builds
+dist/
+dist-ssr/
+
+# Logs and local runtime files
+logs/
+*.log
+*.local
+
+# Editor and OS files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

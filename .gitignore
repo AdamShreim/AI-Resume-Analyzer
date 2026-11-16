@@ -1,33 +1,34 @@
-# Logs
-logs
+# Dependencies
+node_modules/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Uploaded resumes
+uploads/
+
+# Build output
+dist/
+dist-ssr/
+
+# Logs and local files
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
-# Dependencies
-node_modules/
-
-# Build output
-dist/
-dist-ssr/
-
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# Uploads and local runtime files
-uploads/
 *.local
 
 # Editor and OS files
-.vscode/
+.vscode/*
 !.vscode/extensions.json
 .idea/
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj

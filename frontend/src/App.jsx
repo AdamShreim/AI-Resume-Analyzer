@@ -5,6 +5,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import ResumeAnal from "./pages/ResumeAnal";
+import AnalysisDetail from "./pages/AnalysisDetail";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/resume-analysis" element={<ResumeAnal />} />
+        <Route path="/analysis/:id" element={<AnalysisDetail />} />
       </Routes>
     </BrowserRouter>
   );

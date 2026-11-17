@@ -14,6 +14,7 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 const pdfParse = require("pdf-parse");
 const Analysis = require("./models/Analysis");
+const parseAnalysisResponse = require("./utils/parseAnalysisResponse");
 const AI_MODEL =
   process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-120b";
 const openai = new OpenAI({
@@ -167,61 +168,31 @@ app.post(
             `,
       });
 
-      const result =
-        aiResponse.output_text ||
-        (Array.isArray(aiResponse.output)
-          ? aiResponse.output
-              .map((item) =>
-                item.content?.map((content) => content.text || "").join(""),
-              )
-              .join("")
-          : "");
-
-      const extractJson = (text) => {
-        const firstBrace = text.indexOf("{");
-        const lastBrace = text.lastIndexOf("}");
-        if (firstBrace >= 0 && lastBrace > firstBrace) {
-          return text.slice(firstBrace, lastBrace + 1);
-        }
-        return text;
-      };
-
       let parsed;
       try {
-        const clean = extractJson(result)
-          .replace(/```json|```/g, "")
-          .trim();
-        parsed = JSON.parse(clean);
-      } catch (e) {
-        console.log("Failed to parse AI response as JSON:", e);
-        console.log("AI raw output:", result);
-
-        parsed = {
-          score: 0,
-          strengths: [],
-          weaknesses: [],
-          suggestions: [],
-          keywords_present: [],
-          keywords_missing: [],
-          text: [],
-          resume_text: limitedText,
-        };
+        parsed = parseAnalysisResponse(aiResponse);
+      } catch {
+        console.error("AI returned an incomplete or invalid analysis");
+        return res.status(502).json({
+          error:
+            "The AI returned an incomplete or invalid analysis. Please try again.",
+        });
       }
 
       try {
         const analysis = await Analysis.create({
           userId: req.user.id,
           jobDescription: jobDescription,
-          ...parsed,
+          score: parsed.score,
+          keywords_present: parsed.keywords_present,
+          keywords_missing: parsed.keywords_missing,
+          strengths: parsed.strengths,
+          weaknesses: parsed.weaknesses,
+          suggestions: parsed.suggestions,
           resume_text: limitedText,
           improved_resume: null, // not improved yet
         });
-        try {
-          // Clean up the uploaded file
-          fs.unlinkSync(filePath);
-        } catch (e) {
-          console.log("File cleanup failed:", e);
-        }
+
         return res.json(analysis);
       } catch (e) {
         console.log("Saving data failed", e);
@@ -230,6 +201,14 @@ app.post(
     } catch (err) {
       console.error("PDF parsing error:", err);
       res.status(500).json({ error: "Failed to analyze file" });
+    } finally {
+      if (req.file?.path) {
+        try {
+          await fs.promises.unlink(req.file.path);
+        } catch (error) {
+          console.error("File cleanup failed:", error.code);
+        }
+      }
     }
   },
 );

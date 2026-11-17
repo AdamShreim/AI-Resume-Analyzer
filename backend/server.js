@@ -14,6 +14,8 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 const pdfParse = require("pdf-parse");
 const Analysis = require("./models/Analysis");
+const AI_MODEL =
+  process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-120b";
 const openai = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1",
@@ -65,8 +67,10 @@ app.post(
       const limitedText = cleanedText.slice(0, 8000); // Limit to first 8000 characters
       //Analyzing API
       const aiResponse = await openai.responses.create({
-        model: "llama-3.3-70b-versatile",
+        model: AI_MODEL,
         temperature: 0,
+        reasoning: { effort: "medium" },
+        max_output_tokens: 6000,
         input: `You are an ATS (Applicant Tracking System) analyzer.
 
             Your job is to STRICTLY compare a resume against a job description.
@@ -328,7 +332,7 @@ app.post("/api/ai/improve", authMiddleware, async (req, res) => {
                     Return ONLY the improved resume text.
                     `;
     const response = await openai.responses.create({
-      model: "llama-3.3-70b-versatile",
+      model: AI_MODEL,
       input: prompt,
     });
 

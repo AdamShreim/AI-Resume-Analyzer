@@ -39,12 +39,20 @@ AI Resume Analyzer is a full-stack web application designed to help users evalua
 
 ## Environment Variables
 
-Create a .env file in the backend directory with the following values:
+Create a `.env` file in the `backend` directory with the following values:
 
-- MONGO_URI
-- JWT_SECRET
-- AI_API_KEY
-- AI_API_URL
+```dotenv
+MONGO_URI=your-mongodb-connection-string
+JWT_SECRET=your-jwt-secret
+GROQ_API_KEY=your-groq-api-key
+GROQ_MODEL=openai/gpt-oss-120b
+```
+
+Both resume analysis and resume improvement use Groq through its OpenAI-compatible
+API. `GROQ_MODEL` is optional and defaults to `openai/gpt-oss-120b` when absent or
+blank. Set it to another supported model to change the model used by both features,
+then restart the backend. Free-tier usage is subject to your Groq account's limits.
+Keep `.env` private; it is ignored by Git.
 
 ## Running the Application
 

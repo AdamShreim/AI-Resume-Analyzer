@@ -6,7 +6,8 @@ import "../App.css";
 export default function ResumeAnal() {
   const navigate = useNavigate();
   const [result, setResult] = useState(null);
-  const [showResults, setShowResults] = useState(false);
+  const [analysisError, setAnalysisError] = useState("");
+  const [improvementError, setImprovementError] = useState("");
   const [file, setFile] = useState(null);
   const [jobDescription, setJobDescription] = useState("");
   const [fileUrl, setFileUrl] = useState(null);
@@ -15,10 +16,25 @@ export default function ResumeAnal() {
   const [isImproving, setIsImproving] = useState(false);
 
   const [analysisId, setAnalysisId] = useState(null);
+  const busy = loading || isImproving;
+
+  const resetResults = () => {
+    setResult(null);
+    setAnalysisId(null);
+    setImprovedResume("");
+    setAnalysisError("");
+    setImprovementError("");
+  };
   //.........................................................
   //api request to backend for analysis
   const handleAnalysis = async () => {
-    if (!file) return;
+    if (busy) return;
+
+    resetResults();
+    if (!file || !jobDescription.trim()) {
+      setAnalysisError("Select a PDF and enter a job description.");
+      return;
+    }
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
@@ -27,16 +43,16 @@ export default function ResumeAnal() {
       formData.append("jobDescription", jobDescription);
       const res = await axios.post("/api/ai/analyze", formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
       setAnalysisId(res.data._id);
       setResult(res.data); // Store the analysis results for display
-      setShowResults(true);
     } catch (error) {
-      console.error("Error occurred while analyzing resume:", error);
-      setShowResults(false);
+      setAnalysisError(
+        error.response?.data?.error ||
+          "Unable to analyze your resume. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -44,10 +60,10 @@ export default function ResumeAnal() {
   //........................................................
 
   const handleImprove = async () => {
-    if (!analysisId) {
-      console.error("Cannot improve without analysis ID");
-      return;
-    }
+    if (busy || !analysisId) return;
+
+    setImprovementError("");
+    setImprovedResume("");
 
     try {
       setIsImproving(true);
@@ -65,7 +81,10 @@ export default function ResumeAnal() {
       );
       setImprovedResume(res.data.improved);
     } catch (error) {
-      console.error("Error occurred while improving resume:", error);
+      setImprovementError(
+        error.response?.data?.error ||
+          "Unable to improve your resume. Please try again.",
+      );
     } finally {
       setIsImproving(false);
     }
@@ -81,6 +100,7 @@ export default function ResumeAnal() {
   //file handling functions
   const handleDrop = (e) => {
     e.preventDefault();
+    if (busy) return;
     const droppedFile = e.dataTransfer.files[0];
     if (!droppedFile || droppedFile.type !== "application/pdf") return;
     handleFileChange(droppedFile);
@@ -91,7 +111,10 @@ export default function ResumeAnal() {
   };
 
   const handleFileChange = (newFile) => {
+    if (busy) return;
     if (!newFile || newFile.type !== "application/pdf") return;
+
+    resetResults();
 
     // cleanup old URL
     if (fileUrl) {
@@ -104,13 +127,15 @@ export default function ResumeAnal() {
   };
 
   const handleRemoveFile = () => {
+    if (busy) return;
+
+    resetResults();
     if (fileUrl) {
       URL.revokeObjectURL(fileUrl);
     }
 
     setFile(null);
     setFileUrl(null);
-    setShowResults(false);
   };
   //end of file handling functions
   //........................................................
@@ -129,7 +154,11 @@ export default function ResumeAnal() {
         accept=".pdf"
         id="resume-upload"
         className="hidden"
-        onChange={(e) => handleFileChange(e.target.files[0])}
+        disabled={busy}
+        onChange={(e) => {
+          handleFileChange(e.target.files[0]);
+          e.target.value = "";
+        }}
       />
       {file ? (
         <div className="flex flex-col items-center gap-3">
@@ -151,14 +180,16 @@ export default function ResumeAnal() {
           <div className="flex gap-3 mt-4">
             <button
               onClick={handleRemoveFile}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400"
+              disabled={busy}
+              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Remove File
             </button>
 
             <label
               htmlFor="resume-upload"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 cursor-pointer"
+              aria-disabled={busy}
+              className={`bg-blue-600 text-white px-4 py-2 rounded-lg ${busy ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-500 cursor-pointer"}`}
             >
               Choose Another
             </label>
@@ -192,21 +223,28 @@ export default function ResumeAnal() {
       <textarea
         placeholder="Enter job description..."
         value={jobDescription}
-        onChange={(e) => setJobDescription(e.target.value)}
+        disabled={busy}
+        onChange={(e) => {
+          if (busy) return;
+          resetResults();
+          setJobDescription(e.target.value);
+        }}
         className="p-2 border rounded mb-4 w-[90%] lg:w-[30%] flex items-center justify-center mx-auto mt-6"
       />
 
+      {analysisError && (
+        <p role="alert" className="text-red-600 text-center mt-4">
+          {analysisError}
+        </p>
+      )}
+
       <div className="items-center justify-center flex">
         <button
-          onClick={async () => {
-            if (!file) return;
-            await handleAnalysis();
-            setShowResults(true);
-          }}
-          disabled={loading}
+          onClick={handleAnalysis}
+          disabled={busy}
           style={{
-            opacity: loading ? 0.6 : 1,
-            cursor: loading ? "not-allowed" : "pointer",
+            opacity: busy ? 0.6 : 1,
+            cursor: busy ? "not-allowed" : "pointer",
           }}
           className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-400 mt-6 shadow-lg transition"
         >
@@ -218,7 +256,7 @@ export default function ResumeAnal() {
 
       {/*Results section */}
 
-      {showResults && (
+      {result && (
         <div className="w-[90%] lg:w-[60%] mx-auto mt-12 bg-white rounded-xl shadow-lg p-8 mb-12">
           <h2 className="text-2xl font-bold mb-4">Analysis Results</h2>
           {result && (
@@ -294,11 +332,16 @@ export default function ResumeAnal() {
 
           <button
             onClick={handleImprove}
-            disabled={isImproving}
-            className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-400 mt-6 shadow-lg transition"
+            disabled={busy || !analysisId}
+            className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-400 mt-6 shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isImproving ? "Improving..." : "Improve Resume"}
           </button>
+          {improvementError && (
+            <p role="alert" className="text-red-600 mt-4">
+              {improvementError}
+            </p>
+          )}
           {improvedResume && (
             <div>
               <h3>Improved Resume</h3>
